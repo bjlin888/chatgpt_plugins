@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>File Upload with Chunking and Progress Bar</title>
+  <style>
+    .submitButton {
+      background-color: green;
+      color: white;
+      padding: 5px;
+      border: none;
+      border-radius: 5px;
+      margin: 5px;
+    }
+
+    .progressElement {
+      width: 99%;
+      height: 5px;
+      background-color: grey;
+      margin: 5px;
+    }
+
+    .progressBar {
+      width: 0%;
+      height: 100%;
+      background-color: blue;
+    }
+  </style>
+</head>
+<body>
+  <button class="submitButton">Submit File</button>
+  <div class="progressElement">
+    <div class="progressBar"></div>
+  </div>
+
+  <script>
+    // Chunking function with Chinese punctuation handling
+    function chunkFile(content) {
+      var chunks = [];
+      var chunk = '';
+      var chunkSize = 0;
+      var chinesePunctuationMarks = /[！，。？；]/;
+      var openCloseMarks = {
+        '【': '】',
+        '「': '」',
+        '《': '》',
+        '〈': '〉',
+        '：': '',
+        '‘': '’',
+        '“': '”',
+      };
+
+      for (var i = 0; i < content.length; i++) {
+        var char = content.charAt(i);
+        chunk += char;
+        chunkSize++;
+
+        if (chunkSize > 700 || (chunkSize >= 500 && chinesePunctuationMarks.test(char))) {
+          var lastChar = char;
+          var lastOpenCloseMark = openCloseMarks[lastChar];
+
+          if (lastOpenCloseMark && !chunk.includes(lastOpenCloseMark)) {
+            continue;
+          }
+
+          chunks.push(chunk.trim());
+          chunk = '';
+          chunkSize = 0;
+        }
+      }
+
+      if (chunk.length > 0) {
+        chunks.push(chunk.trim());
+      }
+
+      return chunks;
+    }
+
+    // Add event listener to handle file upload
+    var submitButton = document.querySelector('.submitButton');
+    var progressBar = document.querySelector('.progressBar');
+    submitButton.addEventListener('click', function() {
+      var inputFile = document.createElement('input');
+      inputFile.type = 'file';
+      inputFile.accept = '.txt, .js, .py, .html, .css, .json, .csv';
+
+      inputFile.addEventListener('change', async function() {
+        var file = inputFile.files[0];
+
+        if (file) {
+          // Read file contents
+          var reader = new FileReader();
+
+          reader.onload = async function(event) {
+            var content = event.target.result;
+            var chunks = chunkFile(content);
+
+            // Print each chunk in the console
+            chunks.forEach(function(chunk, index) {
+              console.log('Chunk', index + 1 + ':', chunk);
+            });
+
+            // Perform the necessary actions with the chunks
+            // Replace the console.log statements with your own logic
+            console.log('Received chunks:', chunks);
+
+            // Update the progress bar to turn blue
+            progressBar.style.width = '100%';
+            progressBar.style.backgroundColor = 'blue';
+          };
+
+          reader.readAsText(file);
+        }
+      });
+
+      // Trigger the file input dialog
+      inputFile.click();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Chunking Example</title>
+    <style>
+        .chunk {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="fileInput">
+    <div id="output"></div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            var reader = new FileReader();
+
+            reader.onload = function(event) {
+                var content = event.target.result;
+                var chunks = chunkFile(content);
+                displayChunks(chunks);
+            };
+
+            reader.readAsText(file);
+        });
+
+        function chunkFile(content) {
+            var chunks = [];
+            var chunk = '';
+            var chunkSize = 0;
+            var chinesePunctuationMarks = /[！，。？；]/;
+            var openCloseMarks = {
+                '【': '】',
+                '「': '」',
+                '《': '》',
+                '〈': '〉',
+                '：': '',
+                '‘': '’',
+                '“': '”'
+            };
+
+            for (var i = 0; i < content.length; i++) {
+                var char = content.charAt(i);
+                chunk += char;
+                chunkSize++;
+
+                if (chunkSize > 700 || (chunkSize >= 500 && chinesePunctuationMarks.test(char))) {
+                    var lastChar = char;
+                    var lastOpenCloseMark = openCloseMarks[lastChar];
+
+                    if (lastOpenCloseMark && !chunk.includes(lastOpenCloseMark)) {
+                        continue;
+                    }
+
+                    chunks.push(chunk.trim());
+                    chunk = '';
+                    chunkSize = 0;
+                }
+            }
+
+            if (chunk.length > 0) {
+                chunks.push(chunk.trim());
+            }
+
+            return chunks;
+        }
+
+        function displayChunks(chunks) {
+            var outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '';
+
+            chunks.forEach(function(chunk) {
+                var div = document.createElement('div');
+                div.classList.add('chunk');
+                div.textContent = chunk;
+                outputDiv.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>

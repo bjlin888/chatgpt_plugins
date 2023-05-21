@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "File Submission",
+  "version": "1.0",
+  "description": "Submit file and chunks to conversation",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
